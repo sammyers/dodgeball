@@ -1,1 +1,57 @@
 /* CSS declarations go here */
+
+body {
+  padding: 1rem!important;
+}
+
+.scoreboard-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  z-index: -1;
+}
+
+.segment > .buttons {
+  width: 100%;
+}
+
+.scoreboard-color-left,
+.scoreboard-color-right {
+  width: 50%;
+  height: 100%;
+  float: left;
+}
+
+.scoreboard > .grid {
+  height: 100vh;
+}
+
+.grid > .row > .column {
+  height: 100%;
+  line-height: initial;
+}
+
+.team-name {
+  font-size: 5em;
+  color: white;
+}
+
+.team-score {
+  font-size: 15em;
+  color: white;
+}
+
+.progress > .label {
+  transform: translateY(-2.5rem);
+  font-size: 1.5em!important;
+}
+
+.center.aligned.segment {
+  height: 7.5rem;
+}
+
+.center.aligned.segment > .progress > .bar {
+  height: 2.57rem;
+}
