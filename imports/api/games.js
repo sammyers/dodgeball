@@ -5,7 +5,7 @@ import { getPlayer } from './players';
 
 export const Games = new Mongo.Collection('games');
 
-export const getActiveGame = () => Games.findOne({ active: true });
+export const getActiveGame = () => Games.findOne({ $or: [{ active: true }, { cleared: false }] });
 
 export const createTeams = players => {
   const allPlayers = players.slice();
@@ -31,6 +31,7 @@ export const createGame = (teams, players, rules) => {
     rules,
     teams,
     switchSides: false,
+    cleared: false,
   });
 };
 
@@ -67,6 +68,18 @@ export const getTeams = () => {
   );
 };
 
+export const getWinningTeam = () => {
+  const { teams } = (getActiveGame() || {});
+  if (!teams) {
+    return;
+  }
+  const [ scoreA, scoreB ] = getGameScore();
+  if (scoreA > scoreB) {
+    return teams[0].name;
+  }
+  return teams[1].name;
+}
+
 export const getLastOut = player => {
   const { playersOut } = getActiveGame();
   return playersOut.find(
@@ -80,7 +93,7 @@ export const countOuts = player => {
 };
 
 export const reportOut = (playerId, outType) => {
-  const { _id, rules: { respawnTime, increaseRespawnTime }} = getActiveGame();
+  const { _id, rules: { respawnTime, increaseRespawnTime, scoreLimit }} = getActiveGame();
   const previousOuts = countOuts(playerId);
   const penalty = increaseRespawnTime ? previousOuts : 0;
   Games.update(_id, {
@@ -93,4 +106,42 @@ export const reportOut = (playerId, outType) => {
       }
     }
   });
+
+  const [ teamA, teamB ] = getGameScore();
+  if (teamA >= scoreLimit || teamB >= scoreLimit) {
+    Games.update(_id, {
+      $set: {
+        active: false,
+        timeEnded: new Date()
+      } 
+    });
+  }
+};
+
+export const clearGame = () => {
+  const { _id } = getActiveGame();
+  Games.update({ _id }, { cleared: true });
+};
+
+export const replayGame = () => {
+
+};
+
+export const getPlayersOut = ({ players, playersOut }, team) => {
+  const now = moment();
+  return playersOut.filter(
+    ({ playerId, timeIn }) => players[playerId] === team && moment(timeIn).isAfter(now)
+  );
+}
+
+export const getNextPlayerIn = (game, team) => {
+  const now = moment();
+  const outsOnTeam = getPlayersOut(game, team);
+  if (!outsOnTeam.length) {
+    return;
+  }
+  outsOnTeam.sort((a, b) => {
+    return moment(a.timeIn).diff(moment(b.timeIn))
+  });
+  return outsOnTeam[0];
 };

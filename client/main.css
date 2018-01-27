@@ -41,6 +41,7 @@ body {
 .team-score {
   font-size: 15em;
   color: white;
+  margin-top: 2rem;
 }
 
 .progress > .label {
@@ -48,10 +49,28 @@ body {
   font-size: 1.5em!important;
 }
 
-.center.aligned.segment {
-  height: 7.5rem;
-}
-
 .center.aligned.segment > .progress > .bar {
   height: 2.57rem;
+}
+
+.circle-picker {
+  margin-top: 1rem;
+}
+
+.game-not-started {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.game-not-started-message {
+  font-size: 5em;
+  color: white;
+  width: 100%;
+  text-align: center;
 }

@@ -8,7 +8,7 @@ export default class Timer extends Component {
 
   tick = () => {
     const diff = moment(this.props.endTime).diff(moment());
-    this.setState({ diff: diff > 0 ? diff : 0 });
+    this.setState({ diff });
   }
 
   componentDidMount() {
@@ -32,7 +32,9 @@ export default class Timer extends Component {
         percent={percent}
         size='medium'
         label={{
-          children: `${minutes}:${seconds < 10 ? 0 : ''}${seconds}`
+          children: this.state.diff > 0 ?
+            `${minutes}:${seconds < 10 ? 0 : ''}${seconds}`
+            : 'Player In!'
         }}
       />
     );

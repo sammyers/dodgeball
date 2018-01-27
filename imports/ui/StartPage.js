@@ -2,13 +2,13 @@ import React, { Component } from 'react';
 import { Redirect } from 'react-router';
 import { withTracker } from 'meteor/react-meteor-data';
 
-import { Button, Input, List, Dropdown, Header, Icon } from 'semantic-ui-react';
+import { Button, Input, List, Dropdown, Header, Icon, Grid, Segment } from 'semantic-ui-react';
 
 import TeamEditor from './TeamEditor';
 import NewPlayerInput from './NewPlayerInput';
 import RulesEditor from './RulesEditor';
 
-import { getActiveGame, createGame, startGame } from '../api/games';
+import { getActiveGame, createGame, startGame, clearGame } from '../api/games';
 import { getPlayers, addPlayer } from '../api/players';
 
 import { nameMap } from './colors';
@@ -103,6 +103,14 @@ class StartPage extends Component {
     if (redirect) {
       return <Redirect push to={redirect} />
     }
+    if (game && game.timeEnded && !game.cleared) {
+      return (
+        <div>
+          Game Over
+          <Button content='Clear game' onClick={() => clearGame()} />
+        </div>
+      );
+    }
     if (gameStarted) {
       return (
         <div>
@@ -138,66 +146,81 @@ class StartPage extends Component {
     }
     return (
       <div>
-        <div className='teams'>
-          <Header as='h3'>
-            <Icon name='protect' />
-            <Header.Content>Teams</Header.Content>
-          </Header>
-          <TeamEditor
-            label='Team A'
-            name={teamNames[0]}
-            color={teamColors[0]}
-            onChangeName={(event, { value }) => this.handleTeamNameChange(0, value)}
-            onChangeColor={({ hex }) => this.handleTeamColorChange(0, hex)}
-          />
-          <TeamEditor
-            label='Team B'
-            name={teamNames[1]}
-            color={teamColors[1]}
-            onChangeName={(event, { value }) => this.handleTeamNameChange(1, value)}
-            onChangeColor={({ hex }) => this.handleTeamColorChange(1, hex)}
-          />
-        </div>
-        <div className='player-list'>
-          <Header as='h3'>
-            <Icon name='users' />
-            <Header.Content>Players</Header.Content>
-          </Header>
-          <List relaxed>
-            {currentPlayers.map((id, index) => (
-              <List.Item key={id}>
-                <Button
-                  color='red'
-                  icon='remove user'
-                  labelPosition='left'
-                  label={{
-                    basic: true,
-                    content: playerMap[id],
-                    pointing: false,
-                  }}
-                  onClick={() => this.handlePlayerRemove(id)}
-                />
-              </List.Item>
-            ))}
-          </List>
-          <NewPlayerInput
-            allPlayers={allPlayers}
-            currentPlayers={currentPlayers}
-            value={newPlayerName}
-            onSearchChange={this.handleSearchChange}
-            onSelect={this.handlePlayerSelect}
-            onPlayerAdd={this.handlePlayerAdd}
-          />
-        </div>
-        <RulesEditor rules={rules} onChange={this.handleRuleChange} />
-        <Button
-          inverted
-          color='green'
-          icon='play circle'
-          content='Create Game'
-          size='huge'
-          onClick={this.handleCreateGame}
-        />
+        <Grid relaxed padded textAlign='center'>
+          <Grid.Row>
+            <Header as='h3'>
+              <Icon name='protect' />
+              <Header.Content>Teams</Header.Content>
+            </Header>
+            <Grid style={{ width: '100%' }}>
+              <Grid.Row>
+                <Grid.Column width={8}>
+                  <TeamEditor
+                    label='Team A'
+                    name={teamNames[0]}
+                    color={teamColors[0]}
+                    onChangeName={(event, { value }) => this.handleTeamNameChange(0, value)}
+                    onChangeColor={({ hex }) => this.handleTeamColorChange(0, hex)}
+                  />
+                </Grid.Column>
+                <Grid.Column width={8}>
+                  <TeamEditor
+                    label='Team B'
+                    name={teamNames[1]}
+                    color={teamColors[1]}
+                    onChangeName={(event, { value }) => this.handleTeamNameChange(1, value)}
+                    onChangeColor={({ hex }) => this.handleTeamColorChange(1, hex)}
+                  />
+                </Grid.Column>
+              </Grid.Row>
+            </Grid>
+          </Grid.Row>
+          <Grid.Row textAlign='center'>
+            <Header as='h3'>
+              <Icon name='users' />
+              <Header.Content>Players</Header.Content>
+            </Header>
+            <Grid relaxed columns={5} style={{ width: '100%', height: 'fit-content' }}>
+              {currentPlayers.map((id, index) => (
+                <Grid.Column key={id}>
+                  <Button
+                    size='large'
+                    color='red'
+                    icon='remove user'
+                    labelPosition='left'
+                    label={{
+                      basic: true,
+                      content: playerMap[id],
+                      pointing: false,
+                    }}
+                    onClick={() => this.handlePlayerRemove(id)}
+                  />
+                </Grid.Column>
+              ))}
+            </Grid>
+            <NewPlayerInput
+              allPlayers={allPlayers}
+              currentPlayers={currentPlayers}
+              value={newPlayerName}
+              onSearchChange={this.handleSearchChange}
+              onSelect={this.handlePlayerSelect}
+              onPlayerAdd={this.handlePlayerAdd}
+            />
+          </Grid.Row>
+          <Grid.Row>
+            <RulesEditor rules={rules} onChange={this.handleRuleChange} />
+          </Grid.Row>
+          <Grid.Row>
+            <Button
+              inverted
+              color='green'
+              icon='play circle'
+              content='Create Game'
+              size='huge'
+              onClick={this.handleCreateGame}
+            />
+          </Grid.Row>
+        </Grid>
       </div>
     );
   }

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Dropdown, Button } from 'semantic-ui-react';
+import { Dropdown, Button, Segment } from 'semantic-ui-react';
 
 export default function NewPlayerInput({
   allPlayers,
@@ -13,10 +13,11 @@ export default function NewPlayerInput({
   const isNewName = !!value && !allPlayers.some(({ name }) => name === value);
 
   return (
-    <div className='new-player'>
+    <div style={{ marginTop: '1rem' }}>
       <Dropdown
         search
         selection
+        color='violet'
         selectOnBlur={false}
         selectOnNavigation={false}
         placeholder='New Player Name'
@@ -34,7 +35,12 @@ export default function NewPlayerInput({
         onChange={onSelect}
       />
       {isNewName &&
-        <Button icon='add user' content='Add New Player' onClick={onPlayerAdd} />
+        <Button
+          icon='add user'
+          content='Add New Player'
+          style={{ 'marginLeft': '1rem' }}
+          onClick={onPlayerAdd}
+        />
       }
     </div>
   );
