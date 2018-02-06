@@ -7,6 +7,7 @@ import { Button, Input, List, Dropdown, Header, Icon, Grid, Segment } from 'sema
 import TeamEditor from './TeamEditor';
 import NewPlayerInput from './NewPlayerInput';
 import RulesEditor from './RulesEditor';
+import Player from './Player';
 
 import { getActiveGame, createGame, startGame, clearGame } from '../api/games';
 import { getPlayers, addPlayer } from '../api/players';
@@ -44,7 +45,10 @@ class StartPage extends Component {
   }
 
   handlePlayerSelect = (event, { value }) => {
-    this.setState({ currentPlayers: this.state.currentPlayers.concat(value) });
+    this.setState({
+      currentPlayers: this.state.currentPlayers.concat(value),
+      newPlayerName: '',
+    });
   }
 
   handlePlayerAdd = () => {
@@ -131,16 +135,29 @@ class StartPage extends Component {
       );
     }
     if (gameActive) {
+      const { players, teams } = game;
       return (
         <div>
-          <Button
-            inverted
-            color='green'
-            icon='play circle'
-            content='Start Game'
-            size='huge'
-            onClick={() => startGame(game._id)}
-          />
+          <Grid>
+            <Grid.Row>
+              <Grid.Column>
+                
+              </Grid.Column>
+              <Grid.Column>
+
+              </Grid.Column>
+            </Grid.Row>
+            <Grid.Row>
+              <Button
+                inverted
+                color='green'
+                icon='play circle'
+                content='Start Game'
+                size='huge'
+                onClick={() => startGame(game._id)}
+              />
+            </Grid.Row>
+          </Grid>
         </div>
       );
     }
@@ -183,16 +200,8 @@ class StartPage extends Component {
             <Grid relaxed columns={5} style={{ width: '100%', height: 'fit-content' }}>
               {currentPlayers.map((id, index) => (
                 <Grid.Column key={id}>
-                  <Button
-                    size='large'
-                    color='red'
-                    icon='remove user'
-                    labelPosition='left'
-                    label={{
-                      basic: true,
-                      content: playerMap[id],
-                      pointing: false,
-                    }}
+                  <Player
+                    name={playerMap[id]}
                     onClick={() => this.handlePlayerRemove(id)}
                   />
                 </Grid.Column>

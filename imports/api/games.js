@@ -1,5 +1,6 @@
 import { Mongo } from 'meteor/mongo';
 import moment from 'moment';
+import _ from 'lodash';
 
 import { getPlayer } from './players';
 
@@ -7,18 +8,27 @@ export const Games = new Mongo.Collection('games');
 
 export const getActiveGame = () => Games.findOne({ $or: [{ active: true }, { cleared: false }] });
 
-export const createTeams = players => {
-  const allPlayers = players.slice();
-  const groupedPlayers = {};
-  for (let i = 0; i < Math.ceil(players.length / 2); i++) {
-    const index = Math.floor(Math.random() * (players.length - 1));
-    const [ id ] = allPlayers.splice(index, 1);
-    groupedPlayers[id] = 0;
+const shufflePlayers = players => {
+  const newPlayers = players.slice();
+  for (let i = newPlayers.length - 1; i > 0; i -= 1) {
+    let j = Math.floor(Math.random() * (i + 1));
+    let temp = newPlayers[i];
+    newPlayers[i] = newPlayers[j];
+    newPlayers[j] = temp;
   }
-  return {
-    ...groupedPlayers,
-    ...allPlayers.reduce((all, id) => ({ ...all, [id]: 1 }), {})
-  };
+  return newPlayers;
+};
+
+export const createTeams = players => {
+  const shuffledPlayers = shufflePlayers(players);
+  const groupedPlayers = {};
+  return shuffledPlayers.reduce((all, id, index) => {
+    let team = 0;
+    if (index < shuffledPlayers.length / 2) {
+      team = 1;
+    }
+    return { ...all, [id]: team };
+  }, {});
 };
 
 export const createGame = (teams, players, rules) => {
@@ -33,6 +43,53 @@ export const createGame = (teams, players, rules) => {
     switchSides: false,
     cleared: false,
   });
+};
+
+export const getTeams = () => {
+  const { players } = getActiveGame() || {};
+  if (!players) {
+    return;
+  }
+  return Object.entries(players).reduce(
+    (teams, [ id, team ]) => {
+      const newTeams = teams.slice();
+      newTeams[team].push(getPlayer(id));
+      return newTeams;
+    },
+    [[], []]
+  );
+};
+
+export const rebalanceTeams = () => {
+  const teams = getTeams();
+  const diff = teams[0].length - teams[1].length;
+  const absDiff = Math.abs(diff);
+  if (absDiff > 1) {
+    const largerTeam = diff > 0 ? 0 : 1;
+    const numTrades = Math.floor(absDiff / 2);
+    const trades = teams[largerTeam].splice(-numTrades, numTrades);
+    teams[1 - largerTeam].push(...trades);
+    const players = teams.reduce((all, team, idx) => {
+      return team.reduce((_all, { _id }) => ({
+        ..._all,
+        [_id]: idx,
+      }), all);
+    }, {});
+    Games.update(getActiveGame()._id, { $set: { players } });
+  }
+};
+
+export const addPlayerToGame = id => {
+  const { _id } = getActiveGame();
+  const teams = getTeams();
+  const selectedTeam = teams[0].length > teams[1].length ? 1 : 0;
+  Games.update(_id, { $set: { [`players.${id}`]: selectedTeam } });
+};
+
+export const removePlayerFromGame = id => {
+  const { _id } = getActiveGame();
+  Games.update(_id, { $unset: { [`players.${id}`]: '' } });
+  rebalanceTeams();
 };
 
 export const startGame = gameId => {
@@ -51,21 +108,6 @@ export const getGameScore = () => {
     newScore[scoringTeam] += (outType === 'catch' ? 2 : 1);
     return newScore;
   }, [0, 0]);
-};
-
-export const getTeams = () => {
-  const { players } = getActiveGame() || {};
-  if (!players) {
-    return;
-  }
-  return Object.entries(players).reduce(
-    (teams, [ id, team ]) => {
-      const newTeams = teams.slice();
-      newTeams[team].push(getPlayer(id));
-      return newTeams;
-    },
-    [[], []]
-  );
 };
 
 export const getWinningTeam = () => {
