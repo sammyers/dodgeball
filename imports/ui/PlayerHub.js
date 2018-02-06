@@ -55,6 +55,12 @@ class PlayerHub extends Component {
             </Grid.Column>
           </Grid.Row>
           <Grid.Row>
+            <Header
+              as='h2'
+              textAlign='center'
+              content='Join Game'
+              style={{ color: 'white', width: '100%', marginBottom: 0 }}
+            />
             <NewPlayerInput
               allPlayers={allPlayers}
               currentPlayers={_.keys(players)}
