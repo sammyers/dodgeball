@@ -31,7 +31,7 @@ class Scoreboard extends Component {
         <div className='game-not-started'>
           <TeamBackground colors={[teamA.color, teamB.color]} />
           <div className='game-not-started-message'>Game Over!</div>
-          <div className='game-not-started-message'>{winningTeam} has won the game.</div>
+          <div className='game-not-started-message'>{winningTeam} won the game.</div>
         </div>
       );
     }
