@@ -55,8 +55,8 @@ class PlayerCard extends Component {
     return (
       <Segment textAlign='center' style={{ height: '7.5rem' }}>
         <div style={{ height: '38px' }}>
-          <Header as='h3' content={name} floated='left' />
-          <Modal
+          <Header as='h3' content={name} floated={report ? 'left' : undefined} />
+          {report && <Modal
             basic
             size='small'
             open={this.state.modalOpen}
@@ -85,7 +85,7 @@ class PlayerCard extends Component {
               <Icon name='checkmark' /> Yes
             </Button>
           </Modal.Actions>
-          </Modal>
+          </Modal>}
         </div>
         {showTimer ? <RespawnTimer {...lastOut} /> : <OutReporter />}
       </Segment>

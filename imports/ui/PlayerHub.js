@@ -4,7 +4,7 @@ import { withTracker } from 'meteor/react-meteor-data';
 import moment from 'moment';
 import _ from 'lodash';
 
-import { Grid, Segment, Header, Icon } from 'semantic-ui-react';
+import { Grid, Segment, Header, Icon, Checkbox } from 'semantic-ui-react';
 
 import Timer from './Timer';
 import PlayerCard from './PlayerCard';
@@ -15,7 +15,7 @@ import { getActiveGame, getTeams, rebalanceTeams, addPlayerToGame } from '../api
 import { getPlayers, addPlayer } from '../api/players';
 
 class PlayerHub extends Component {
-  state = { newPlayerName: '' }
+  state = { newPlayerName: '', mirror: false }
 
   handleSearchChange = (event, { searchQuery }) => {
     this.setState({ newPlayerName: searchQuery });
@@ -31,8 +31,13 @@ class PlayerHub extends Component {
     this.setState({ newPlayerName: '' });
   }
 
+  handleToggleMirror = () => {
+    this.setState({ mirror: !this.state.mirror });
+  }
+
   render() {
     const { gameActive, gameStarted, game, teams, allPlayers } = this.props;
+    const { newPlayerName, mirror } = this.state;
 
     if (!gameActive) {
       return <Redirect to="/" />
@@ -40,18 +45,36 @@ class PlayerHub extends Component {
 
     const { teams: [ teamA, teamB ], players } = game;
 
+    const teamColors = mirror ? [teamB.color, teamA.color] : [teamA.color, teamB.color];
+
     return (
       <div>
-        <TeamBackground colors={[teamA.color, teamB.color]} />
+        <div style={{
+          position: 'absolute',
+          top: '2em',
+          left: 0,
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}>
+          <Header as='h4' content='Mirror' style={{ color: 'white' }} />
+          <Checkbox toggle onChange={this.handleToggleMirror} />
+        </div>
+        <TeamBackground colors={teamColors} />
         <Grid textAlign='center'>
           <Grid.Row>
             <Grid.Column width={8}>
-              <div className='team-name'>{teamA.name}</div>
-              {teams[0].map((player, idx) => <PlayerCard player={player} key={idx} />)}
+              <div className='team-name'>{(mirror ? teamB : teamA).name}</div>
+              {teams[mirror ? 1 : 0].map((player, idx) => (
+                <PlayerCard player={player} key={idx} />
+              ))}
             </Grid.Column>
             <Grid.Column width={8}>
-              <div className='team-name'>{teamB.name}</div>
-              {teams[1].map((player, idx) => <PlayerCard player={player} key={idx} />)}
+              <div className='team-name'>{(mirror ? teamA : teamB).name}</div>
+              {teams[mirror ? 0 : 1].map((player, idx) => (
+                <PlayerCard player={player} key={idx} />
+              ))}
             </Grid.Column>
           </Grid.Row>
           <Grid.Row>
@@ -64,7 +87,7 @@ class PlayerHub extends Component {
             <NewPlayerInput
               allPlayers={allPlayers}
               currentPlayers={_.keys(players)}
-              value={this.state.newPlayerName}
+              value={newPlayerName}
               onSearchChange={this.handleSearchChange}
               onSelect={this.handlePlayerSelect}
               onPlayerAdd={this.handlePlayerAdd}

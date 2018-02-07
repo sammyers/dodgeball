@@ -9,7 +9,7 @@ import NewPlayerInput from './NewPlayerInput';
 import RulesEditor from './RulesEditor';
 import Player from './Player';
 
-import { getActiveGame, createGame, startGame, clearGame } from '../api/games';
+import { getActiveGame, createGame, startGame, clearGame, getTeams } from '../api/games';
 import { getPlayers, addPlayer } from '../api/players';
 
 import { nameMap } from './colors';
@@ -239,6 +239,7 @@ export default withTracker(() => ({
   gameActive: !!getActiveGame(),
   gameStarted: !!(getActiveGame() || {}).timeStarted,
   game: getActiveGame(),
+  teams: getTeams(),
   allPlayers: getPlayers(),
   playerMap: getPlayers().reduce(
     (all, { _id, name }) => ({ ...all, [_id]: name }),
