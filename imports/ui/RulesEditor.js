@@ -10,7 +10,7 @@ export default function RulesEditor({ rules, onChange }) {
   return (
     <div className='rules-editor'>
       <Header as='h3'>
-        <Icon name='settings' />
+        <Icon name='options' />
         <Header.Content>Game Rules</Header.Content>
       </Header>
       <Form>

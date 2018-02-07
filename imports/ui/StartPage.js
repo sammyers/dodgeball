@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router';
 import { withTracker } from 'meteor/react-meteor-data';
+import _ from 'lodash';
 
 import { Button, Input, List, Dropdown, Header, Icon, Grid, Segment } from 'semantic-ui-react';
 
@@ -9,7 +10,17 @@ import NewPlayerInput from './NewPlayerInput';
 import RulesEditor from './RulesEditor';
 import Player from './Player';
 
-import { getActiveGame, createGame, startGame, clearGame, getTeams } from '../api/games';
+import {
+  getActiveGame,
+  createGame,
+  startGame,
+  clearGame,
+  shuffleTeams,
+  restartGame,
+  getTeams,
+  addPlayerToGame,
+  removePlayerFromGame,
+} from '../api/games';
 import { getPlayers, addPlayer } from '../api/players';
 
 import { nameMap } from './colors';
@@ -28,6 +39,8 @@ class StartPage extends Component {
     newPlayerName: '',
   }
 
+  hasGameEnded = () => this.props.game && this.props.game.timeEnded && !this.props.game.cleared
+
   handleTeamNameChange = (index, name) => {
     const newNames = this.state.teamNames.slice();
     newNames[index] = name;
@@ -45,25 +58,39 @@ class StartPage extends Component {
   }
 
   handlePlayerSelect = (event, { value }) => {
-    this.setState({
-      currentPlayers: this.state.currentPlayers.concat(value),
-      newPlayerName: '',
-    });
+    if (this.hasGameEnded()) {
+      addPlayerToGame(value);
+      this.setState({ newPlayerName: '' });
+    } else {
+      this.setState({
+        currentPlayers: this.state.currentPlayers.concat(value),
+        newPlayerName: '',
+      });
+    }
   }
 
   handlePlayerAdd = () => {
-    this.setState({
-      currentPlayers: this.state.currentPlayers.concat(
-        addPlayer(this.state.newPlayerName)
-      ),
-      newPlayerName: '',
-    });
+    if (this.hasGameEnded()) {
+      addPlayerToGame(addPlayer(this.state.newPlayerName));
+      this.setState({ newPlayerName: '' });
+    } else {
+      this.setState({
+        currentPlayers: this.state.currentPlayers.concat(
+          addPlayer(this.state.newPlayerName)
+        ),
+        newPlayerName: '',
+      });
+    }
   }
 
   handlePlayerRemove = targetId => {
-    this.setState({
-      currentPlayers: this.state.currentPlayers.filter(id => id !== targetId),
-    });
+    if (this.hasGameEnded()) {
+      removePlayerFromGame(targetId);
+    } else {
+      this.setState({
+        currentPlayers: this.state.currentPlayers.filter(id => id !== targetId),
+      });
+    }
   }
 
   handleRuleChange = (rule, value) => {
@@ -94,7 +121,7 @@ class StartPage extends Component {
   }
 
   render() {
-    const { gameActive, gameStarted, allPlayers, playerMap, game } = this.props;
+    const { gameActive, gameStarted, allPlayers, playerMap, game, teams } = this.props;
     const {
       redirect,
       teamNames,
@@ -107,11 +134,60 @@ class StartPage extends Component {
     if (redirect) {
       return <Redirect push to={redirect} />
     }
-    if (game && game.timeEnded && !game.cleared) {
+    if (this.hasGameEnded()) {
+      const { players } = game;
       return (
         <div>
-          Game Over
-          <Button content='Clear game' onClick={() => clearGame()} />
+          <Grid textAlign='center'>
+            <Grid.Row>
+              <Header as='h2' content='Game Over!' />
+            </Grid.Row>
+            <Grid.Row>
+              <Grid.Column width={8} className='replay-team-column'>
+                <Header as='h3' content={game.teams[0].name} />
+                {teams[0].map(({ name, _id }, idx) => (
+                  <Player key={idx} name={name} onClick={() => this.handlePlayerRemove(_id)} />
+                ))}
+              </Grid.Column>
+              <Grid.Column width={8} className='replay-team-column'>
+                <Header as='h3' content={game.teams[1].name} />
+                {teams[1].map(({ name, _id }, idx) => (
+                  <Player key={idx} name={name} onClick={() => this.handlePlayerRemove(_id)} />
+                ))}
+              </Grid.Column>
+            </Grid.Row>
+            <Grid.Row>
+              <NewPlayerInput
+                allPlayers={allPlayers}
+                currentPlayers={_.keys(players)}
+                value={newPlayerName}
+                onSearchChange={this.handleSearchChange}
+                onSelect={this.handlePlayerSelect}
+                onPlayerAdd={this.handlePlayerAdd}
+              />
+            </Grid.Row>
+            <Grid.Row>
+              <Button content='Shuffle Teams' icon='shuffle' onClick={() => shuffleTeams()} />
+            </Grid.Row>
+            <Grid.Row>
+              <Button
+                inverted
+                color='green'
+                icon='play circle'
+                content='Restart Game'
+                size='huge'
+                onClick={() => restartGame()}
+              />
+            </Grid.Row>
+            <Grid.Row>
+              <Button
+                inverted
+                content='Clear game'
+                icon='checkmark box'
+                color='red'
+                onClick={() => clearGame()} />
+            </Grid.Row>
+          </Grid>
         </div>
       );
     }
@@ -135,18 +211,32 @@ class StartPage extends Component {
       );
     }
     if (gameActive) {
-      const { players, teams } = game;
+      const { players } = game;
       return (
         <div>
           <Grid>
-            <Grid.Row>
-              <Grid.Column>
-                
+            {/*<Grid.Row>
+              <Grid.Column width={8}>
+                {teams[0].map(({ name, _id }, idx) => (
+                  <Player key={idx} name={name} onClick={() => this.handlePlayerRemove(_id)} />
+                ))}
               </Grid.Column>
-              <Grid.Column>
-
+              <Grid.Column width={8}>
+                {teams[1].map(({ name, _id }, idx) => (
+                  <Player key={idx} name={name} onClick={() => this.handlePlayerRemove(_id)} />
+                ))}
               </Grid.Column>
             </Grid.Row>
+            <Grid.Row>
+              <NewPlayerInput
+                allPlayers={allPlayers}
+                currentPlayers={_.keys(players)}
+                value={newPlayerName}
+                onSearchChange={this.handleSearchChange}
+                onSelect={this.handlePlayerSelect}
+                onPlayerAdd={this.handlePlayerAdd}
+              />
+            </Grid.Row>*/}
             <Grid.Row>
               <Button
                 inverted

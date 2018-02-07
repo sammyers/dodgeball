@@ -162,11 +162,23 @@ export const reportOut = (playerId, outType) => {
 
 export const clearGame = () => {
   const { _id } = getActiveGame();
-  Games.update({ _id }, { cleared: true });
+  Games.update({ _id }, { $set: { cleared: true } });
 };
 
-export const replayGame = () => {
+export const shuffleTeams = () => {
+  const { _id, players } = getActiveGame();
+  const newTeams = createTeams(shufflePlayers(_.keys(players)));
+  Games.update(_id, { $set: { players: newTeams } });
+};
 
+export const restartGame = () => {
+  const { _id } = getActiveGame();
+  Games.update(_id, { $set: {
+    active: true,
+    timeStarted: new Date(),
+    timeEnded: null,
+    playersOut: [],
+  } });
 };
 
 export const getPlayersOut = ({ players, playersOut }, team) => {

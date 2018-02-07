@@ -39,7 +39,7 @@ class PlayerHub extends Component {
     const { gameActive, gameStarted, game, teams, allPlayers } = this.props;
     const { newPlayerName, mirror } = this.state;
 
-    if (!gameActive) {
+    if (!gameActive || game.timeEnded) {
       return <Redirect to="/" />
     }
 
