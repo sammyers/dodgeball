@@ -5,10 +5,12 @@ import _ from 'lodash';
 
 import { Button, Input, List, Dropdown, Header, Icon, Grid, Segment } from 'semantic-ui-react';
 
-import TeamEditor from './TeamEditor';
+import TeamSettingsEditor from './TeamSettingsEditor';
 import NewPlayerInput from './NewPlayerInput';
 import RulesEditor from './RulesEditor';
 import Player from './Player';
+import ReplayScreen from './ReplayScreen';
+import TeamEditor from './TeamEditor';
 
 import {
   getActiveGame,
@@ -103,14 +105,7 @@ class StartPage extends Component {
   }
 
   handleCreateGame = () => {
-    let [colorA, colorB] = this.state.teamColors;
-    const teamA = this.state.teamNames[0] || 'Team A';
-    const teamB = this.state.teamNames[1] || 'Team B';
     createGame(
-      [
-        { name: teamA, color: colorA },
-        { name: teamB, color: colorB }
-      ],
       this.state.currentPlayers,
       this.state.rules
     );
@@ -121,7 +116,7 @@ class StartPage extends Component {
   }
 
   render() {
-    const { gameActive, gameStarted, allPlayers, playerMap, game, teams } = this.props;
+    const { gameActive, gameStarted, allPlayers, playerMap, game, teamPlayers } = this.props;
     const {
       redirect,
       teamNames,
@@ -135,108 +130,44 @@ class StartPage extends Component {
       return <Redirect push to={redirect} />
     }
     if (this.hasGameEnded()) {
-      const { players } = game;
       return (
-        <div>
-          <Grid textAlign='center'>
-            <Grid.Row>
-              <Header as='h2' content='Game Over!' />
-            </Grid.Row>
-            <Grid.Row>
-              <Grid.Column width={8} className='replay-team-column'>
-                <Header as='h3' content={game.teams[0].name} />
-                {teams[0].map(({ name, _id }, idx) => (
-                  <Player key={idx} name={name} onClick={() => this.handlePlayerRemove(_id)} />
-                ))}
-              </Grid.Column>
-              <Grid.Column width={8} className='replay-team-column'>
-                <Header as='h3' content={game.teams[1].name} />
-                {teams[1].map(({ name, _id }, idx) => (
-                  <Player key={idx} name={name} onClick={() => this.handlePlayerRemove(_id)} />
-                ))}
-              </Grid.Column>
-            </Grid.Row>
-            <Grid.Row>
-              <NewPlayerInput
-                allPlayers={allPlayers}
-                currentPlayers={_.keys(players)}
-                value={newPlayerName}
-                onSearchChange={this.handleSearchChange}
-                onSelect={this.handlePlayerSelect}
-                onPlayerAdd={this.handlePlayerAdd}
-              />
-            </Grid.Row>
-            <Grid.Row>
-              <Button content='Shuffle Teams' icon='shuffle' onClick={() => shuffleTeams()} />
-            </Grid.Row>
-            <Grid.Row>
-              <Button
-                inverted
-                color='green'
-                icon='play circle'
-                content='Restart Game'
-                size='huge'
-                onClick={() => restartGame()}
-              />
-            </Grid.Row>
-            <Grid.Row>
-              <Button
-                inverted
-                content='Clear game'
-                icon='checkmark box'
-                color='red'
-                onClick={() => clearGame()} />
-            </Grid.Row>
-          </Grid>
-        </div>
+        <ReplayScreen />
       );
     }
     if (gameStarted) {
       return (
-        <div>
-          Game in progress
-          <Button
-            primary
-            content='View Scoreboard'
-            icon='trophy'
-            onClick={() => this.handleRedirect('/scoreboard')}
-          />
-          <Button
-            primary
-            content='Go to Player Hub'
-            icon='users'
-            onClick={() => this.handleRedirect('/player-hub')}
-          />
-        </div>
+        <Grid textAlign='center'>
+          <Grid.Row>
+            <Header>Game in progress</Header>
+          </Grid.Row>
+          <Grid.Row>
+            <Button
+              primary
+              content='View Scoreboard'
+              icon='trophy'
+              onClick={() => this.handleRedirect('/scoreboard')}
+            />
+          </Grid.Row>
+          <Grid.Row>
+            <Button
+              primary
+              content='Go to Player Hub'
+              icon='users'
+              onClick={() => this.handleRedirect('/player-hub')}
+            />
+          </Grid.Row>
+        </Grid>
       );
     }
     if (gameActive) {
       const { players } = game;
       return (
         <div>
-          <Grid>
-            {/*<Grid.Row>
-              <Grid.Column width={8}>
-                {teams[0].map(({ name, _id }, idx) => (
-                  <Player key={idx} name={name} onClick={() => this.handlePlayerRemove(_id)} />
-                ))}
-              </Grid.Column>
-              <Grid.Column width={8}>
-                {teams[1].map(({ name, _id }, idx) => (
-                  <Player key={idx} name={name} onClick={() => this.handlePlayerRemove(_id)} />
-                ))}
-              </Grid.Column>
-            </Grid.Row>
+          <Grid textAlign='center'>
+            <TeamEditor />
             <Grid.Row>
-              <NewPlayerInput
-                allPlayers={allPlayers}
-                currentPlayers={_.keys(players)}
-                value={newPlayerName}
-                onSearchChange={this.handleSearchChange}
-                onSelect={this.handlePlayerSelect}
-                onPlayerAdd={this.handlePlayerAdd}
-              />
-            </Grid.Row>*/}
+              <Button content='Shuffle Teams' icon='shuffle' onClick={() => shuffleTeams()} />
+            </Grid.Row>
             <Grid.Row>
               <Button
                 inverted
@@ -247,6 +178,14 @@ class StartPage extends Component {
                 onClick={() => startGame(game._id)}
               />
             </Grid.Row>
+            <Grid.Row>
+              <Button
+                inverted
+                content='Cancel'
+                icon='undo'
+                color='red'
+                onClick={() => clearGame()} />
+            </Grid.Row>
           </Grid>
         </div>
       );
@@ -254,34 +193,6 @@ class StartPage extends Component {
     return (
       <div>
         <Grid relaxed padded textAlign='center'>
-          <Grid.Row>
-            <Header as='h3'>
-              <Icon name='protect' />
-              <Header.Content>Teams</Header.Content>
-            </Header>
-            <Grid style={{ width: '100%' }}>
-              <Grid.Row>
-                <Grid.Column width={8}>
-                  <TeamEditor
-                    label='Team A'
-                    name={teamNames[0]}
-                    color={teamColors[0]}
-                    onChangeName={(event, { value }) => this.handleTeamNameChange(0, value)}
-                    onChangeColor={({ hex }) => this.handleTeamColorChange(0, hex)}
-                  />
-                </Grid.Column>
-                <Grid.Column width={8}>
-                  <TeamEditor
-                    label='Team B'
-                    name={teamNames[1]}
-                    color={teamColors[1]}
-                    onChangeName={(event, { value }) => this.handleTeamNameChange(1, value)}
-                    onChangeColor={({ hex }) => this.handleTeamColorChange(1, hex)}
-                  />
-                </Grid.Column>
-              </Grid.Row>
-            </Grid>
-          </Grid.Row>
           <Grid.Row textAlign='center'>
             <Header as='h3'>
               <Icon name='users' />
@@ -329,7 +240,7 @@ export default withTracker(() => ({
   gameActive: !!getActiveGame(),
   gameStarted: !!(getActiveGame() || {}).timeStarted,
   game: getActiveGame(),
-  teams: getTeams(),
+  teamPlayers: getTeams(),
   allPlayers: getPlayers(),
   playerMap: getPlayers().reduce(
     (all, { _id, name }) => ({ ...all, [_id]: name }),

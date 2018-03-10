@@ -43,14 +43,14 @@ class Scoreboard extends Component {
           <Grid.Row>
             <ScoreColumn
               teamNumber={0}
-              teamName={teamA.name}
+              teamName={teamA.name || 'Team A'}
               score={score[0]}
               scoreLimit={scoreLimit}
               progressColor={valueMap[teamA.color]}
             />
             <ScoreColumn
               teamNumber={1}
-              teamName={teamB.name}
+              teamName={teamB.name || 'Team B'}
               score={score[1]}
               scoreLimit={scoreLimit}
               progressColor={valueMap[teamB.color]}

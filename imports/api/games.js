@@ -4,6 +4,8 @@ import _ from 'lodash';
 
 import { getPlayer } from './players';
 
+import { nameMap } from '../ui/colors';
+
 export const Games = new Mongo.Collection('games');
 
 export const getActiveGame = () => Games.findOne({ $or: [{ active: true }, { cleared: false }] });
@@ -31,7 +33,7 @@ export const createTeams = players => {
   }, {});
 };
 
-export const createGame = (teams, players, rules) => {
+export const createGame = (players, rules) => {
   Games.insert({
     active: true,
     timeStarted: null,
@@ -39,7 +41,10 @@ export const createGame = (teams, players, rules) => {
     players: createTeams(players),
     playersOut: [],
     rules,
-    teams,
+    teams: [
+      { name: '', color: nameMap['red'] },
+      { name: '', color: nameMap['blue'] },
+    ],
     switchSides: false,
     cleared: false,
   });
@@ -134,8 +139,20 @@ export const countOuts = player => {
   return playersOut.filter(({ playerId }) => playerId === player).length;
 };
 
+export const allPlayersOut = team => {
+  const game = getActiveGame();
+  const teamSize = _.values(game.players).filter(x => x === team).length;
+  const outsOnTeam = getPlayersOut(game, team);
+
+  return teamSize === outsOnTeam.length;
+};
+
 export const reportOut = (playerId, outType) => {
-  const { _id, rules: { respawnTime, increaseRespawnTime, scoreLimit }} = getActiveGame();
+  const {
+    _id,
+    rules: { respawnTime, increaseRespawnTime, scoreLimit },
+    players,
+  } = getActiveGame();
   const previousOuts = countOuts(playerId);
   const penalty = increaseRespawnTime ? previousOuts : 0;
   Games.update(_id, {
@@ -148,6 +165,10 @@ export const reportOut = (playerId, outType) => {
       }
     }
   });
+
+  if (allPlayersOut(players[playerId])) {
+
+  }
 
   const [ teamA, teamB ] = getGameScore();
   if (teamA >= scoreLimit || teamB >= scoreLimit) {
@@ -162,7 +183,7 @@ export const reportOut = (playerId, outType) => {
 
 export const clearGame = () => {
   const { _id } = getActiveGame();
-  Games.update({ _id }, { $set: { cleared: true } });
+  Games.update(_id, { $set: { active: false, cleared: true } });
 };
 
 export const shuffleTeams = () => {
@@ -186,7 +207,7 @@ export const getPlayersOut = ({ players, playersOut }, team) => {
   return playersOut.filter(
     ({ playerId, timeIn }) => players[playerId] === team && moment(timeIn).isAfter(now)
   );
-}
+};
 
 export const getNextPlayerIn = (game, team) => {
   const now = moment();
@@ -198,4 +219,22 @@ export const getNextPlayerIn = (game, team) => {
     return moment(a.timeIn).diff(moment(b.timeIn))
   });
   return outsOnTeam[0];
+};
+
+export const changeTeamName = (team, newName) => {
+  const { _id } = getActiveGame();
+  Games.update(_id, {
+    $set: {
+      [`teams.${team}.name`]: newName,
+    },
+  });
+};
+
+export const changeTeamColor = (team, newColor) => {
+  const { _id } = getActiveGame();
+  Games.update(_id, {
+    $set: {
+      [`teams.${team}.color`]: newColor,
+    },
+  });
 };

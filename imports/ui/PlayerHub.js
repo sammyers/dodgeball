@@ -65,13 +65,17 @@ class PlayerHub extends Component {
         <Grid textAlign='center'>
           <Grid.Row>
             <Grid.Column width={8}>
-              <div className='team-name'>{(mirror ? teamB : teamA).name}</div>
+              <div className='team-name'>
+                {(mirror ? teamB : teamA).name || (mirror ? 'Team B' : 'Team A')}
+              </div>
               {teams[mirror ? 1 : 0].map((player, idx) => (
                 <PlayerCard player={player} key={idx} />
               ))}
             </Grid.Column>
             <Grid.Column width={8}>
-              <div className='team-name'>{(mirror ? teamA : teamB).name}</div>
+              <div className='team-name'>
+                {(mirror ? teamA : teamB).name || (mirror ? 'Team A' : 'Team B')}
+              </div>
               {teams[mirror ? 0 : 1].map((player, idx) => (
                 <PlayerCard player={player} key={idx} />
               ))}
