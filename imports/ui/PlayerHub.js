@@ -61,8 +61,8 @@ class PlayerHub extends Component {
           <Header as='h4' content='Mirror' style={{ color: 'white' }} />
           <Checkbox toggle onChange={this.handleToggleMirror} />
         </div>
-        <TeamBackground colors={teamColors} />
-        <Grid textAlign='center'>
+        <Grid textAlign='center' style={{ position: 'relative', minHeight: '100vh' }}>
+          <TeamBackground colors={teamColors} />
           <Grid.Row>
             <Grid.Column width={8}>
               <div className='team-name'>
@@ -82,20 +82,22 @@ class PlayerHub extends Component {
             </Grid.Column>
           </Grid.Row>
           <Grid.Row>
-            <Header
-              as='h2'
-              textAlign='center'
-              content='Join Game'
-              style={{ color: 'white', width: '100%', marginBottom: 0 }}
-            />
-            <NewPlayerInput
-              allPlayers={allPlayers}
-              currentPlayers={_.keys(players)}
-              value={newPlayerName}
-              onSearchChange={this.handleSearchChange}
-              onSelect={this.handlePlayerSelect}
-              onPlayerAdd={this.handlePlayerAdd}
-            />
+            <div>
+              <Header
+                as='h2'
+                textAlign='center'
+                content='Join Game'
+                style={{ color: 'white', width: '100%', marginBottom: 0 }}
+              />
+              <NewPlayerInput
+                allPlayers={allPlayers}
+                currentPlayers={_.keys(players)}
+                value={newPlayerName}
+                onSearchChange={this.handleSearchChange}
+                onSelect={this.handlePlayerSelect}
+                onPlayerAdd={this.handlePlayerAdd}
+              />
+            </div>
           </Grid.Row>
         </Grid>
       </div>
