@@ -107,8 +107,12 @@ export const getGameScore = () => {
     return;
   }
 
-  return game.playersOut.reduce((score, { playerId, outType }) => {
+  return game.playersOut.reduce((score, { playerId, team, outType }) => {
     const newScore = score.slice();
+    if (outType === 'wipeout') {
+      newScore[1 - team] += 5;
+      return newScore;
+    }
     const scoringTeam = 1 - game.players[playerId];
     newScore[scoringTeam] += (outType === 'catch' ? 2 : 1);
     return newScore;
@@ -122,9 +126,9 @@ export const getWinningTeam = () => {
   }
   const [ scoreA, scoreB ] = getGameScore();
   if (scoreA > scoreB) {
-    return teams[0].name;
+    return teams[0].name || 'Team A';
   }
-  return teams[1].name;
+  return teams[1].name || 'Team B';
 }
 
 export const getLastOut = player => {
@@ -166,8 +170,20 @@ export const reportOut = (playerId, outType) => {
     }
   });
 
-  if (allPlayersOut(players[playerId])) {
-
+  const team = players[playerId];
+  if (allPlayersOut(team)) {
+    Games.update(_id, {
+      $push: {
+        playersOut: {
+          playerId: null,
+          team,
+          outType: 'wipeout',
+          timeOut: new Date(),
+          timeIn: new Date()
+        }
+      }
+    });
+    freeWipedTeam(team);
   }
 
   const [ teamA, teamB ] = getGameScore();
@@ -204,9 +220,22 @@ export const restartGame = () => {
 
 export const getPlayersOut = ({ players, playersOut }, team) => {
   const now = moment();
-  return playersOut.filter(
-    ({ playerId, timeIn }) => players[playerId] === team && moment(timeIn).isAfter(now)
-  );
+  return playersOut.filter(({ playerId, timeIn, outType }) => (
+    outType !== 'wipeout' && players[playerId] === team && moment(timeIn).isAfter(now)
+  ));
+};
+
+export const freeWipedTeam = team => {
+  const { _id, players, playersOut } = getActiveGame();
+  const now = moment();
+  const newOuts = playersOut.map(out => {
+    const { outType, playerId, timeIn } = out;
+    if (outType !== 'wipeout' && players[playerId] === team && moment(timeIn).isAfter(now)) {
+      out.timeIn = new Date();
+    }
+    return out;
+  });
+  Games.update(_id, { $set: { playersOut: newOuts } });
 };
 
 export const getNextPlayerIn = (game, team) => {
