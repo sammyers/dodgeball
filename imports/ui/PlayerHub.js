@@ -48,7 +48,7 @@ class PlayerHub extends Component {
     const teamColors = mirror ? [teamB.color, teamA.color] : [teamA.color, teamB.color];
 
     return (
-      <div>
+      <div className='player-hub'>
         <div style={{
           position: 'absolute',
           top: '2em',

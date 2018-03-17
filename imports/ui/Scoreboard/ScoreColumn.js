@@ -58,8 +58,8 @@ class ScoreColumn extends React.Component {
     ).length;
 
     return (
-      <Grid.Column width={8}>
-        <div className='team-name' style={{ marginTop: '3em' }}>{teamName}</div>
+      <Grid.Column width={8} className='score-column'>
+        <div className='team-name'>{teamName}</div>
         <div className='team-score'>{score}</div>
         <Progress
           active

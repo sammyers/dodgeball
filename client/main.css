@@ -4,6 +4,10 @@ body {
   height: 100vh;
 }
 
+.start-page, .player-hub, .scoreboard {
+  padding: 1em;
+}
+
 .scoreboard-background {
   position: absolute;
   top: 0;
@@ -111,4 +115,11 @@ li + li {
 
 .replay-team-column .labeled.button {
   margin-top: 1rem;
+}
+
+.score-column {
+  min-height: 100vh;
+  display: flex!important;
+  flex-direction: column;
+  justify-content: center;
 }

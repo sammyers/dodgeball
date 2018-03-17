@@ -7,7 +7,7 @@ import TeamEditor from './TeamEditor';
 import { shuffleTeams, restartGame, clearGame } from '../api/games';
 
 const ReplayScreen = () => (
-  <div>
+  <div className='start-page'>
     <Grid textAlign='center'>
       <Grid.Row>
         <Header as='h2' content='Game Over!' />

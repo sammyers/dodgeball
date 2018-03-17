@@ -136,33 +136,35 @@ class StartPage extends Component {
     }
     if (gameStarted) {
       return (
-        <Grid textAlign='center'>
-          <Grid.Row>
-            <Header>Game in progress</Header>
-          </Grid.Row>
-          <Grid.Row>
-            <Button
-              primary
-              content='View Scoreboard'
-              icon='trophy'
-              onClick={() => this.handleRedirect('/scoreboard')}
-            />
-          </Grid.Row>
-          <Grid.Row>
-            <Button
-              primary
-              content='Go to Player Hub'
-              icon='users'
-              onClick={() => this.handleRedirect('/player-hub')}
-            />
-          </Grid.Row>
-        </Grid>
+        <div className='start-page'>
+          <Grid textAlign='center'>
+            <Grid.Row>
+              <Header>Game in progress</Header>
+            </Grid.Row>
+            <Grid.Row>
+              <Button
+                primary
+                content='View Scoreboard'
+                icon='trophy'
+                onClick={() => this.handleRedirect('/scoreboard')}
+              />
+            </Grid.Row>
+            <Grid.Row>
+              <Button
+                primary
+                content='Go to Player Hub'
+                icon='users'
+                onClick={() => this.handleRedirect('/player-hub')}
+              />
+            </Grid.Row>
+          </Grid>
+        </div>
       );
     }
     if (gameActive) {
       const { players } = game;
       return (
-        <div>
+        <div className='start-page'>
           <Grid textAlign='center'>
             <TeamEditor />
             <Grid.Row>
@@ -191,7 +193,7 @@ class StartPage extends Component {
       );
     }
     return (
-      <div>
+      <div className='start-page'>
         <Grid relaxed padded textAlign='center'>
           <Grid.Row textAlign='center'>
             <Header as='h3'>
