@@ -1,7 +1,7 @@
 /* CSS declarations go here */
 
 body {
-  padding: 1rem!important;
+  height: 100vh;
 }
 
 .scoreboard-background {
@@ -59,10 +59,9 @@ body {
 }
 
 .game-not-started {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100vh;
+  position: relative;
+  height: fit-content;
+  min-height: 100vh;
   width: 100vw;
   display: flex;
   flex-direction: column;
@@ -70,10 +69,38 @@ body {
 }
 
 .game-not-started-message {
-  font-size: 5em;
+  font-size: 70px;
+  line-height: 70px;
   color: white;
   width: 100%;
   text-align: center;
+}
+
+.game-not-started-rules {
+  margin-top: 10px;
+  font-size: 25px;
+  line-height: 35px;
+  color: white;
+  align-self: center;
+}
+
+li + li {
+  margin-top: 10px;
+}
+
+.scoreboard-team-list {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+}
+
+.scoreboard-player {
+  color: white;
+  font-size: 30px;
+}
+
+.scoreboard-player + .scoreboard-player {
+  margin-top: 5px;
 }
 
 .replay-team-column {
